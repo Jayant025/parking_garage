@@ -25,4 +25,32 @@ export const pricingController = {
       next(error);
     }
   },
+
+  parseRateCard: async (req, res, next) => {
+    try {
+      const rawData = req.body.rawData || req.body.rateCard || req.body;
+      const result = await pricingService.parseRateCard(rawData);
+      return res.status(200).json({
+        success: result.success,
+        data: result.cleanedTiers,
+        errors: result.errors,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  importRateCard: async (req, res, next) => {
+    try {
+      const rawData = req.body.rawData || req.body.rateCard || req.body.tiers || req.body;
+      const result = await pricingService.importRateCard(rawData);
+      return res.status(200).json({
+        success: true,
+        data: result.cleanedTiers,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

@@ -245,6 +245,36 @@ export const parkingService = {
     }));
   },
 
+  // T4: Parse Messy Rate Card
+  parseRateCard: async (rawData: any): Promise<{ success: boolean; data: PricingTier[]; errors: string[] }> => {
+    const res = await apiClient.post<{ success: boolean; data: any[]; errors: string[] }>('/pricing/parse-rate-card', { rawData });
+    const cleaned = (res.data.data || []).map((t: any) => ({
+      id: t._id || t.id || t.vehicleType,
+      vehicleType: (t.vehicleType || 'STANDARD').toLowerCase() as VehicleType,
+      name: t.name || `${t.vehicleType} Rate Tier`,
+      firstHourRate: t.firstHourRate,
+      additionalHourRate: t.additionalHourRate,
+      dailyMaxCap: t.dailyMaxCap,
+      evFeePerHour: t.evFeePerHour || 0,
+    }));
+    return { success: res.data.success, data: cleaned, errors: res.data.errors || [] };
+  },
+
+  // T4: Import Cleaned Rate Card to MongoDB
+  importRateCard: async (rawData: any): Promise<{ success: boolean; data: PricingTier[]; message: string }> => {
+    const res = await apiClient.post<{ success: boolean; data: any[]; message: string }>('/pricing/import-rate-card', { rawData });
+    const cleaned = (res.data.data || []).map((t: any) => ({
+      id: t._id || t.id || t.vehicleType,
+      vehicleType: (t.vehicleType || 'STANDARD').toLowerCase() as VehicleType,
+      name: t.name || `${t.vehicleType} Rate Tier`,
+      firstHourRate: t.firstHourRate,
+      additionalHourRate: t.additionalHourRate,
+      dailyMaxCap: t.dailyMaxCap,
+      evFeePerHour: t.evFeePerHour || 0,
+    }));
+    return { success: res.data.success, data: cleaned, message: res.data.message };
+  },
+
   // GET /api/garages
   getGarages: async (): Promise<Garage[]> => {
     const res = await apiClient.get<{ success: boolean; data: any[] }>('/garages');
